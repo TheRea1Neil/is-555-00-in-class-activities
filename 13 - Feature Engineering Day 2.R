@@ -9,6 +9,16 @@ df <- read_csv('https://www.dropbox.com/scl/fi/a37h3rf9rmi7yw9pg4n16/titanic_day
 # Pass the four columns to summary() to check means, maxes
 outlier_candidates <- c('age', 'sib_sp', 'parch', 'fare')
 
+df %>% 
+  select(all_of(outlier_candidates)) %>% 
+
+df %>%  select(all_of(outlier_candidates)) %>% 
+  pivot_longer(everything()) %>% 
+  ggplot(aes(y = value, fill = name)) +
+  geom_boxplot() +
+  facet_wrap(~name, scales = 'free_y') +
+  ggthemes::theme_clean()
+
 
 # calculate extreme threshold caps based on 99th percentile
 

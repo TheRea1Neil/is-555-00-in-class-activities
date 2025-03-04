@@ -7,10 +7,11 @@ df <- read_csv('https://www.dropbox.com/scl/fi/a37h3rf9rmi7yw9pg4n16/titanic_day
 
 
 # Pass the four columns to summary() to check means, maxes
-outlier_candidates <- c('age', 'sib_sp', 'parch', 'fare')
+outlier_candidates <- c('age', 'sib_sp', 'parch', 'fare')data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAbElEQVR4Xs2RQQrAMAgEfZgf7W9LAguybljJpR3wEse5JOL3ZObDb4x1loDhHbBOFU6i2Ddnw2KNiXcdAXygJlwE8OFVBHDgKrLgSInN4WMe9iXiqIVsTMjH7z/GhNTEibOxQswcYIWYOR/zAjBJfiXh3jZ6AAAAAElFTkSuQmCC
 
 df %>% 
   select(all_of(outlier_candidates)) %>% 
+  summary()
 
 df %>%  select(all_of(outlier_candidates)) %>% 
   pivot_longer(everything()) %>% 
@@ -23,11 +24,18 @@ df %>%  select(all_of(outlier_candidates)) %>%
 # calculate extreme threshold caps based on 99th percentile
 
 
+
 # Now check how many are beyond the percentile caps
 
 # cap age and fare, and check work before saving
+age_cap <- quantile(df$age, .99)
+sib_sp_cap <- quantile(df$sib_sp, .99)
+parch_cap <- quantile(df$parch, .99)
+fare_cap <- quantile(df$fare, .99)
 
-
+df <- df %>% 
+  mutate(fare = if_else(fare >= fare_cap, fare_cap, fare),
+         age = if_else(age >= age_cap, age_cap, age))
 
 # save the result to df
 
@@ -76,7 +84,13 @@ df %>%
     fare_th  = fare^(1/2),
     fare_t1  = fare^1,
     fare_t2  = fare^2
-  ) 
+  ) %>% 
+  select(starts_with('fare_')) %>% 
+  pivot_longer(starts_with('fare_')) %>% 
+  ggplot(aes(x = value, fill=name)) +
+  geom_density(alpha = .4) +
+  facet_wrap(~name, ncol = 1, scales= 'free') +
+  ggthemes::theme_clean()
 
 # now let's visualize the effect of the transformations to see 
 # which one makes sense.
